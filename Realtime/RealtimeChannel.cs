@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Timers;
@@ -149,6 +150,9 @@ public class RealtimeChannel : IRealtimeChannel
     private IRealtimePresence? _presence;
     private IRealtimeBroadcast? _broadcast;
     private RealtimeException? _exception;
+
+    private List<PhoenixPostgresChangeResponse>? _phoenixPostgres;
+    private List<Binding> _bindings = [];
 
     private readonly List<StateChangedHandler> _stateChangedHandlers = new();
     private readonly List<MessageReceivedHandler> _messageReceivedHandlers = new();
@@ -332,11 +336,20 @@ public class RealtimeChannel : IRealtimeChannel
     /// <param name="table">The table to listen to.</param>
     /// <param name="filter">The filter to apply.</param>
     /// <returns></returns>
-    public RealtimeChannel OnPostgresChange(PostgresChangesHandler postgresChangeHandler, ListenType listenType = ListenType.All, string schema = "public", string? table = null, string? filter = null)
+    public RealtimeChannel OnPostgresChange(PostgresChangesHandler postgresChangeHandler,
+        ListenType listenType = ListenType.All, string schema = "public", string? table = null, string? filter = null)
     {
         var postgresChangesOptions = new PostgresChangesOptions(schema, table, listenType, filter);
         Register(postgresChangesOptions);
         AddPostgresChangeHandler(listenType, postgresChangeHandler);
+
+        var binding = new Binding()
+        {
+            Options = postgresChangesOptions,
+            Handler = postgresChangeHandler
+        };
+        _bindings.Add(binding);
+
         return this;
     }
 
@@ -431,9 +444,16 @@ public class RealtimeChannel : IRealtimeChannel
             foreach (var handler in changesHandler.ToArray())
                 handler.Invoke(this, response);
 
-        if (_postgresChangesHandlers.TryGetValue(listenType, out var postgresChangesHandler))
-            foreach (var handler in postgresChangesHandler.ToArray())
-                handler.Invoke(this, response);
+        var binding = _bindings.Find(b => b.Options.Event == response.Payload?.Data?._type &&
+                                          response.Payload.Ids.Contains(b.Id) &&
+                                          b.Handler != null);
+        binding?.Handler?.Invoke(this, response);
+        // if (_postgresChangesHandlers.TryGetValue(listenType, out var postgresChangesHandler))
+        // {
+        // var option = PostgresChangesOptions.Find(o => (response?.Payload?.Ids?.Contains(o.id) ?? false) && (o.Event == response.Payload?.Data?._type));
+        // foreach (var handler in postgresChangesHandler.ToArray())
+        // if (option != null) handler.Invoke(this, response);
+        // }
     }
 
     /// <summary>
@@ -692,6 +712,16 @@ public class RealtimeChannel : IRealtimeChannel
             Options.SerializerSettings);
         if (obj?.Payload == null) return;
 
+        _phoenixPostgres = obj.Payload.Response?.change;
+        _phoenixPostgres?.ForEach(response =>
+        {
+            var binding = _bindings.Find(b => b.Options.Event == response.eventName &&
+                                              b.Options.Filter == response.filter &&
+                                              b.Options.Table == response.table &&
+                                              b.Options.Schema == response.schema
+            );
+            if (binding != null) binding.Id = response.id;
+        });
         switch (obj.Payload.Status)
         {
             // A response was received from the channel
@@ -713,7 +743,7 @@ public class RealtimeChannel : IRealtimeChannel
                 _isRejoining = false;
 
                 NotifyErrorOccurred(new RealtimeException(message.Json)
-                { Reason = FailureHint.Reason.ChannelJoinFailure });
+                    { Reason = FailureHint.Reason.ChannelJoinFailure });
                 break;
         }
     }
@@ -752,7 +782,7 @@ public class RealtimeChannel : IRealtimeChannel
                         break;
                     case PhoenixStatusError:
                         NotifyErrorOccurred(new RealtimeException(message.Json)
-                        { Reason = FailureHint.Reason.ChannelJoinFailure });
+                            { Reason = FailureHint.Reason.ChannelJoinFailure });
                         break;
                 }
 

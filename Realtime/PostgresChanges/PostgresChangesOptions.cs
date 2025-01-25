@@ -82,6 +82,9 @@ public class PostgresChangesOptions
 
     private readonly ListenType _listenType;
 
+    [JsonIgnore]
+    public int? id { get; set; }
+    
     /// <summary>
     /// Postgres changes options.
     /// </summary>
