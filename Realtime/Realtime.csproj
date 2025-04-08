@@ -16,7 +16,7 @@
         <PackageProjectUrl>https://github.com/supabase/realtime-csharp</PackageProjectUrl>
         <Summary>Realtime-csharp is written as a  client library for supabase/realtime.</Summary>
         <PackageTags>supabase, realtime, phoenix</PackageTags>
-        <PackageVersion>7.1.0</PackageVersion>
+        <PackageVersion>7.2.0</PackageVersion>
         <ReleaseVersion>7.1.0</ReleaseVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageIcon>icon.png</PackageIcon>
