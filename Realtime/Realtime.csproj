@@ -16,8 +16,10 @@
         <PackageProjectUrl>https://github.com/supabase/realtime-csharp</PackageProjectUrl>
         <Summary>Realtime-csharp is written as a  client library for supabase/realtime.</Summary>
         <PackageTags>supabase, realtime, phoenix</PackageTags>
+        <!-- x-release-please-start-version -->
         <PackageVersion>7.2.0</PackageVersion>
         <ReleaseVersion>7.2.0</ReleaseVersion>
+        <!-- x-release-please-end -->
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>

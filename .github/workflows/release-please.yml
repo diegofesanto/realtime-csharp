@@ -20,4 +20,7 @@ jobs:
           target-branch: ${{ github.ref_name }}
           release-type: simple
           manifest-file: .release-please-manifest.json
+          extra-files: [
+            "Realtime/Realtime.csproj"
+          ]
           
