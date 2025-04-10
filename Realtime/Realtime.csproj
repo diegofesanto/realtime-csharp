@@ -33,9 +33,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Version)' == '' ">
-        <!-- x-release-please-start-version -->
-        <VersionPrefix Condition=" '$(VersionPrefix)' == '' ">7.2.0</VersionPrefix>
-        <!-- x-release-please-end -->
+        <VersionPrefix Condition=" '$(VersionPrefix)' == '' ">7.2.0</VersionPrefix> <!-- x-release-please-version -->
         <VersionSuffix Condition=" '$(VersionSuffix)' == '' "></VersionSuffix>
         <Version Condition=" '$(VersionSuffix)' != '' ">$(VersionPrefix)-$(VersionSuffix)</Version>
         <Version Condition=" '$(Version)' == '' ">$(VersionPrefix)</Version>
