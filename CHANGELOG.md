@@ -1,4 +1,31 @@
-﻿# Changelog
+# Changelog
+
+## [7.3.0](https://github.com/diegofesanto/realtime-csharp/compare/v7.2.0...v7.3.0) (2025-04-11)
+
+
+### Features
+
+* release please ([6951220](https://github.com/diegofesanto/realtime-csharp/commit/6951220b955b3bc2aed20b4578f0df00aecfe9f1))
+* remove unused file ([e4c5831](https://github.com/diegofesanto/realtime-csharp/commit/e4c583176b66bc378ecdbfb2ec81eeb132980d34))
+
+
+### Bug Fixes
+
+* 22 - `SerializerSettings` were not being passed to `PostgresChangesResponse` ([f244281](https://github.com/diegofesanto/realtime-csharp/commit/f244281782ca433f1b89a3818a02f5ea3eaaa17f))
+* 9 ([16292b0](https://github.com/diegofesanto/realtime-csharp/commit/16292b099c9db1f8b0fa28aa138da7143d1e0978))
+* Change websocket lib for Blazor WASM to use realtime ([ba861d8](https://github.com/diegofesanto/realtime-csharp/commit/ba861d842c66dcfb78378b0454a478b11ab57262))
+* Change websocket lib for Blazor WASM to use realtime ([1821fa4](https://github.com/diegofesanto/realtime-csharp/commit/1821fa40ed579c0b281ef4f008c529fc3eb27ad1))
+* implement filter on PostgresChangeHandler ([#55](https://github.com/diegofesanto/realtime-csharp/issues/55)) ([a41e4f7](https://github.com/diegofesanto/realtime-csharp/commit/a41e4f719e2f0f65faf92915777218d5634c24fc))
+* put master branch ([32da489](https://github.com/diegofesanto/realtime-csharp/commit/32da4894e9badfdd3c656415aac187b1a2649b0b))
+* put master branch ([9f983f1](https://github.com/diegofesanto/realtime-csharp/commit/9f983f15b0cb4fea2601295484e502dcac794942))
+
+
+### Miscellaneous Chores
+
+* fix json ([f39c89a](https://github.com/diegofesanto/realtime-csharp/commit/f39c89afd0de90ea021d38ee47a21f2a373076b7))
+* put config to update version ([80ad438](https://github.com/diegofesanto/realtime-csharp/commit/80ad4386fe6ae942ea9b51598da86e119a652e2f))
+* remove extra-files config ([13dbf3f](https://github.com/diegofesanto/realtime-csharp/commit/13dbf3fd1e2347142c3cfc520d7db6f612de5064))
+* try to update csproj ([74e7899](https://github.com/diegofesanto/realtime-csharp/commit/74e789948565e452cdc05cbc02e0f077cffee57f))
 
 ## 7.1.0 - 2025-03-10
 - Implement postgres change filters by @diegofesanto [#55](https://github.com/supabase-community/realtime-csharp/pull/55)
