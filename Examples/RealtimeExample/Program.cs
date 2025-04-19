@@ -1,8 +1,8 @@
-﻿using RealtimeExample.Models;
-using Supabase.Realtime;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using RealtimeExample.Models;
+using Supabase.Realtime;
 using Supabase.Realtime.Interfaces;
 using Supabase.Realtime.PostgresChanges;
 using Supabase.Realtime.Socket;
@@ -22,49 +22,62 @@ namespace RealtimeExample
         {
             // Connect to db and web socket server
             var postgrestClient = new Supabase.Postgrest.Client("http://localhost:3000");
-            var realtimeClient = new Client(SocketEndpoint, new ClientOptions
-            {
-                Parameters = new SocketOptionsParameters
-                {
-                    ApiKey = ApiKey
-                }
-            });
+            var realtimeClient = new Client(
+                SocketEndpoint,
+                new ClientOptions { Parameters = new SocketOptionsParameters { ApiKey = ApiKey } }
+            );
 
-            realtimeClient.AddDebugHandler((sender, message, exception) => Console.WriteLine(message));
+            realtimeClient.AddDebugHandler(
+                (sender, message, exception) => Console.WriteLine(message)
+            );
             realtimeClient.AddStateChangedHandler(SocketEventHandler);
 
             await realtimeClient.ConnectAsync();
 
             // Subscribe to a channel and events
             var channelTodos = realtimeClient.Channel("public:todos");
-            channelTodos.Register(new PostgresChangesOptions("public", "todos"));
-            channelTodos.AddPostgresChangeHandler(ListenType.Inserts, PostgresInsertedHandler);
-            channelTodos.AddPostgresChangeHandler(ListenType.Updates, PostgresUpdatedHandler);
-            channelTodos.AddPostgresChangeHandler(ListenType.Deletes, PostgresDeletedHandler);
+            var options1 = new PostgresChangesOptions("public", "todos", ListenType.Inserts);
+            var options2 = new PostgresChangesOptions("public", "todos", ListenType.Updates);
+            var options3 = new PostgresChangesOptions("public", "todos", ListenType.Deletes);
+            channelTodos.AddPostgresChangeHandler(options1, PostgresInsertedHandler);
+            channelTodos.AddPostgresChangeHandler(options2, PostgresUpdatedHandler);
+            channelTodos.AddPostgresChangeHandler(options3, PostgresDeletedHandler);
             await channelTodos.Subscribe();
 
             Console.ReadKey();
         }
 
-        private static void PostgresDeletedHandler(IRealtimeChannel _, PostgresChangesResponse change)
+        private static void PostgresDeletedHandler(
+            IRealtimeChannel _,
+            PostgresChangesResponse change
+        )
         {
             Console.WriteLine($"Item Deleted");
         }
 
-        private static void PostgresUpdatedHandler(IRealtimeChannel _, PostgresChangesResponse change)
+        private static void PostgresUpdatedHandler(
+            IRealtimeChannel _,
+            PostgresChangesResponse change
+        )
         {
             Console.WriteLine($"Item Updated: {change.Model<User>()}");
         }
 
-        private static void PostgresInsertedHandler(IRealtimeChannel _, PostgresChangesResponse change)
+        private static void PostgresInsertedHandler(
+            IRealtimeChannel _,
+            PostgresChangesResponse change
+        )
         {
             Console.WriteLine($"New item inserted: {change.Model<User>()}");
         }
 
-        private static void SocketEventHandler(IRealtimeClient<RealtimeSocket, RealtimeChannel> sender,
-            SocketState state)
+        private static void SocketEventHandler(
+            IRealtimeClient<RealtimeSocket, RealtimeChannel> sender,
+            SocketState state
+        )
         {
             Debug.WriteLine($"Socket is ${state.ToString()}");
         }
     }
 }
+

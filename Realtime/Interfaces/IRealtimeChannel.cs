@@ -1,4 +1,5 @@
-﻿using Supabase.Realtime.Broadcast;
+﻿using System;
+using Supabase.Realtime.Broadcast;
 using Supabase.Realtime.Channel;
 using Supabase.Realtime.Models;
 using Supabase.Realtime.PostgresChanges;
@@ -136,6 +137,7 @@ public interface IRealtimeChannel
     /// </summary>
     /// <param name="listenType"></param>
     /// <param name="postgresChangeHandler"></param>
+    [Obsolete("Use AddStateChangedHandler instead.")]
     void AddPostgresChangeHandler(ListenType listenType, PostgresChangesHandler postgresChangeHandler);
 
     /// <summary>
@@ -143,6 +145,7 @@ public interface IRealtimeChannel
     /// </summary>
     /// <param name="listenType"></param>
     /// <param name="postgresChangeHandler"></param>
+    [Obsolete("Use RemoveStateChangedHandler instead.")]
     void RemovePostgresChangeHandler(ListenType listenType, PostgresChangesHandler postgresChangeHandler);
 
     /// <summary>
@@ -230,6 +233,7 @@ public interface IRealtimeChannel
     /// </summary>
     /// <param name="postgresChangesOptions"></param>
     /// <returns></returns>
+    [Obsolete("This will be removed in a future version.")]
     IRealtimeChannel Register(PostgresChangesOptions postgresChangesOptions);
 
     /// <summary>

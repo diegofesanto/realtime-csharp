@@ -95,6 +95,7 @@ public interface IRealtimeClient<TSocket, TChannel>: IGettableHeaders
     /// <param name="value"></param>
     /// <param name="parameters"></param>
     /// <returns></returns>
+    [Obsolete("This will be removed in a future version. Use Channel(string) instead.")]
     TChannel Channel(string database = "realtime", string schema = "public", string table = "*",
         string? column = null, string? value = null, Dictionary<string, string>? parameters = null);
 

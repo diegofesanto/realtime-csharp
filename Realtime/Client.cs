@@ -370,6 +370,7 @@ public class Client : IRealtimeClient<RealtimeSocket, RealtimeChannel>
     /// <param name="value">Value the specified column should have</param>
     /// <param name="parameters"></param>
     /// <returns></returns>
+    [Obsolete("This will be removed in a future version. Use Channel(string) instead.")]
     public RealtimeChannel Channel(string database = "realtime", string schema = "public", string table = "*",
         string? column = null, string? value = null, Dictionary<string, string>? parameters = null)
     {
