@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -7,7 +8,9 @@ using System.Timers;
 using Newtonsoft.Json;
 using Supabase.Realtime.Broadcast;
 using Supabase.Realtime.Channel;
+using Supabase.Realtime.Events;
 using Supabase.Realtime.Exceptions;
+using Supabase.Realtime.Handlers;
 using Supabase.Realtime.Interfaces;
 using Supabase.Realtime.Models;
 using Supabase.Realtime.PostgresChanges;
@@ -167,6 +170,9 @@ public class RealtimeChannel : IRealtimeChannel
     /// </summary>
     private List<Binding> _bindings = [];
 
+    internal ServiceContainer Handlers = new ServiceContainer();
+    private RealtimeEvents _realtimeEvents = new RealtimeEvents();
+
     /// <summary>
     /// Initializes a Channel - must call `Subscribe()` to receive events.
     /// </summary>
@@ -182,6 +188,14 @@ public class RealtimeChannel : IRealtimeChannel
         _rejoinTimer = new Timer(options.ClientOptions.Timeout.TotalMilliseconds);
         _rejoinTimer.Elapsed += HandleRejoinTimerElapsed;
         _rejoinTimer.AutoReset = true;
+
+        _realtimeEvents.Add(new PostgresChangesEvents());
+        _realtimeEvents.Add(new SystemEvents());
+        Handlers.AddService(
+            typeof(PostgresChangesHandle),
+            new PostgresChangesHandle(_bindings, this)
+        );
+        Handlers.AddService(typeof(SystemHandle), new SystemHandle());
     }
 
     /// <summary>
@@ -290,7 +304,7 @@ public class RealtimeChannel : IRealtimeChannel
     /// </summary>
     /// <param name="state"></param>
     /// <param name="shouldRejoin"></param>
-    private void NotifyStateChanged(ChannelState state, bool shouldRejoin = true)
+    internal void NotifyStateChanged(ChannelState state, bool shouldRejoin = true)
     {
         State = state;
 
@@ -450,7 +464,7 @@ public class RealtimeChannel : IRealtimeChannel
     /// </summary>
     public void ClearErrorHandlers() => _errorEventHandlers.Clear();
 
-    private void NotifyErrorOccurred(RealtimeException exception)
+    internal void NotifyErrorOccurred(RealtimeException exception)
     {
         _exception = exception;
 
@@ -809,57 +823,15 @@ public class RealtimeChannel : IRealtimeChannel
 
         NotifyMessageReceived(message);
 
+        var realtimeEvent = _realtimeEvents.Get(this, message);
+        realtimeEvent?.Handle(this, message);
+
         switch (message.Event)
         {
             // If a channel is subscribed to postgres changes then we have a special case to account for:
             // A system event is emitted after the normal join ACK that says:
             // {"event":"system","payload":{"channel":"public:todos","extension":"postgres_changes","message":"Subscribed to PostgreSQL","status":"ok"}}
             // This switch case emits the join event after this has been received.
-            case EventType.System:
-                if (!IsJoining)
-                    return;
-
-                var obj = JsonConvert.DeserializeObject<SocketResponse<PhoenixResponse>>(
-                    message.Json!,
-                    Options.SerializerSettings
-                );
-
-                if (obj?.Payload == null)
-                    return;
-
-                switch (obj.Payload.Status)
-                {
-                    case PhoenixStatusOk:
-                        NotifyStateChanged(ChannelState.Joined);
-                        break;
-                    case PhoenixStatusError:
-                        NotifyErrorOccurred(
-                            new RealtimeException(message.Json)
-                            {
-                                Reason = FailureHint.Reason.ChannelJoinFailure,
-                            }
-                        );
-                        break;
-                }
-
-                break;
-            // Handles Insert, Update, Delete
-            case EventType.PostgresChanges:
-                var deserialized = JsonConvert.DeserializeObject<PostgresChangesResponse>(
-                    message.Json!,
-                    Options.SerializerSettings
-                );
-
-                if (deserialized?.Payload?.Data == null)
-                    return;
-
-                deserialized.Json = message.Json;
-                deserialized.SerializerSettings = Options.SerializerSettings;
-
-                // Invoke '*' listener
-                NotifyPostgresChanges(deserialized.Payload!.Data!.Type, deserialized);
-
-                break;
             case EventType.Broadcast:
                 BroadcastHandler?.Invoke(this, message);
                 break;

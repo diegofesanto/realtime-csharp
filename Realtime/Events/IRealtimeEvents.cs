@@ -5,7 +5,7 @@ namespace Supabase.Realtime.Events;
 
 internal interface IRealtimeEvents
 {
-    void Handle(IRealtimeChannel realtimeChannel, SocketResponse response);
+    void Handle(RealtimeChannel realtimeChannel, SocketResponse response);
 
     bool isEvent(IRealtimeSocketResponse response);
 }
